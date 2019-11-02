@@ -1,6 +1,6 @@
 import unittest
-from player import RandomPlayer
-import cribbagegame
+from cribbage.player import RandomPlayer
+import cribbage.cribbagegame as cribbagegame
 
 
 class TestCribbageBoard(unittest.TestCase):
