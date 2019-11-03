@@ -15,7 +15,7 @@ class ScoreCondition(metaclass=ABCMeta):
         raise NotImplementedError
 
 
-class HasPairTripleQuad(ScoreCondition):
+class HasPairTripleQuad_DuringPlay(ScoreCondition):
     def check(self, cards):
         description = None
         pair_rank = ""
@@ -38,6 +38,27 @@ class HasPairTripleQuad(ScoreCondition):
                 description = "Double Pair Royal (%s)" % pair_rank
         return score, description
 
+class HasPairTripleQuad_InHand(ScoreCondition):
+    def check(self, cards):
+        description = ""
+        score = 0
+        if len(cards) > 1:
+            ranks = [card.rank['rank'] for card in cards]
+            pos_pair = {x:ranks.count(x) for x in ranks}
+            for k,v in pos_pair.items():
+                if v == 2:
+                    #found a pair
+                    score += 2
+                    description += "Pair (%s)" % k
+                elif v == 3:
+                    #found three of a kind
+                    score += 6
+                    description += "Three of a kind (%s)" % k
+                elif v == 4:
+                    #found four of a kind
+                    score += 12
+                    description += "Four of a kind (%s)" % k
+        return score, description
 
 class ExactlyEqualsN(ScoreCondition):
 
