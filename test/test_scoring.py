@@ -1,25 +1,78 @@
 import unittest
-#import cribbage.scoring as scoring
 from cribbage import scoring
 import cribbage.playingcards as pc
 
+class TestPairScoring_InHand(unittest.TestCase):
+    def test_pair(self):
+        s = scoring.HasPairTripleQuad_InHand()
+        hand = []
+        hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['nine']))
+        hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['nine']))
+        hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['seven']))
+        hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['two']))
+        hand.append(pc.Card(suit=pc.Deck.SUITS['spades'], rank=pc.Deck.RANKS['three']))
+        score, _ = s.check(hand)
+        self.assertEqual(score, 2)
+        
+    def test_two_pair(self):
+        s = scoring.HasPairTripleQuad_InHand()
+        hand = []
+        hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['nine']))
+        hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['nine']))
+        hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['seven']))
+        hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['two']))
+        hand.append(pc.Card(suit=pc.Deck.SUITS['spades'], rank=pc.Deck.RANKS['two']))
+        score, _ = s.check(hand)
+        self.assertEqual(score, 4)
+        
+    def test_three(self):
+        s = scoring.HasPairTripleQuad_InHand()
+        hand = []
+        hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['nine']))
+        hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['nine']))
+        hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['nine']))
+        hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['ace']))
+        hand.append(pc.Card(suit=pc.Deck.SUITS['spades'], rank=pc.Deck.RANKS['two']))
+        score, _ = s.check(hand)
+        self.assertEqual(score, 6)
+        
+    def test_four(self):
+        s = scoring.HasPairTripleQuad_InHand()
+        hand = []
+        hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['nine']))
+        hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['nine']))
+        hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['nine']))
+        hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['nine']))
+        hand.append(pc.Card(suit=pc.Deck.SUITS['spades'], rank=pc.Deck.RANKS['two']))
+        score, _ = s.check(hand)
+        self.assertEqual(score, 12)
 
-class TestPairScoring(unittest.TestCase):
+class TestPairScoring_DuringPlay(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test_pair_pair(self):
-        s = scoring.HasPairTripleQuad()
+    def test_pair(self):
+        s = scoring.HasPairTripleQuad_DuringPlay()
         hand = []
-        for i in pc.Deck.RANKS.keys():
-            hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS[i]))
         hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['nine']))
         hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['nine']))
+        hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['two']))
+        hand.append(pc.Card(suit=pc.Deck.SUITS['spades'], rank=pc.Deck.RANKS['two']))
         score, _ = s.check(hand)
         self.assertEqual(score, 2)
 
+    def test_pair_old(self):
+        s = scoring.HasPairTripleQuad_DuringPlay()
+        hand = []
+        hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['nine']))
+        hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['nine']))
+        hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['two']))
+        hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['four']))
+        score, _ = s.check(hand)
+        self.assertEqual(score, 0)
+
     def test_pair_triple(self):
-        s = scoring.HasPairTripleQuad()
+        s = scoring.HasPairTripleQuad_DuringPlay()
         hand = []
         for i in pc.Deck.RANKS.keys():
             hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS[i]))
@@ -30,7 +83,7 @@ class TestPairScoring(unittest.TestCase):
         self.assertEqual(score, 6)
 
     def test_pair_quadruple(self):
-        s = scoring.HasPairTripleQuad()
+        s = scoring.HasPairTripleQuad_DuringPlay()
         hand = []
         for i in range(6):
             hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['two']))
@@ -38,7 +91,7 @@ class TestPairScoring(unittest.TestCase):
         self.assertEqual(score, 12)
 
     def test_pair_nothing(self):
-        s = scoring.HasPairTripleQuad()
+        s = scoring.HasPairTripleQuad_DuringPlay()
         hand = []
         for i in pc.Deck.RANKS.keys():
             hand.append(pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS[i]))
@@ -60,7 +113,7 @@ class TestPairScoring(unittest.TestCase):
         self.assertEqual(score, 0)
 
     def test_pair_minimumcards(self):
-        s = scoring.HasPairTripleQuad()
+        s = scoring.HasPairTripleQuad_DuringPlay()
         hand = [pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['nine']),
                 pc.Card(suit=pc.Deck.SUITS['hearts'], rank=pc.Deck.RANKS['nine'])]
         score, _ = s.check(hand)

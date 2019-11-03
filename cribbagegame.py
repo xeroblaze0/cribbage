@@ -1,8 +1,8 @@
 """Cribbage game."""
 import random
-from . import scoring
-from .player import HumanPlayer, RandomPlayer
-from .playingcards import Deck
+from cribbage import scoring
+from cribbage.player import HumanPlayer, RandomPlayer
+from cribbage.playingcards import Deck
 
 DEBUG = True  # Debug flag for debugging output
 
@@ -202,7 +202,7 @@ class CribbageRound:
         """
         score = 0
         score_scenarios = [scoring.ExactlyEqualsN(n=15), scoring.ExactlyEqualsN(n=31),
-                           scoring.HasPairTripleQuad(), scoring.HasStraight_DuringPlay()]
+                           scoring.HasPairTripleQuad_DuringPlay(), scoring.HasStraight_DuringPlay()]
         for scenario in score_scenarios:
             s, desc = scenario.check(card_seq[:])
             score += s
@@ -217,7 +217,7 @@ class CribbageRound:
         """
         score = 0
         score_scenarios = [scoring.CountCombinationsEqualToN(n=15),
-                           scoring.HasPairTripleQuad(), scoring.HasStraight_InHand(), scoring.HasFlush()]
+                           scoring.HasPairTripleQuad_InHand(), scoring.HasStraight_InHand(), scoring.HasFlush()]
         for scenario in score_scenarios:
             s, desc = scenario.check(cards[:])
             score += s
