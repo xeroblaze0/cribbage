@@ -14,6 +14,21 @@ class ScoreCondition(metaclass=ABCMeta):
     def check(self, hand):
         raise NotImplementedError
 
+class HandScoring:
+    score = None
+    description = ""
+    def __init__(self, hand_cards, starter_card):
+        self.hand_cards = hand_cards
+        self.starter_card = starter_card
+        #self.is_crib = is_crib
+        self.all_cards = hand_cards.copy()
+        self.all_cards.append(starter_card)
+
+class NinHand(HandScoring):
+    def check(self):
+        ncounter = CountCombinationsEqualToN(n=15)
+        s,description =  ncounter.check(self.all_cards)
+        return s, description
 
 class HasPairTripleQuad_DuringPlay(ScoreCondition):
     def check(self, cards):
@@ -38,12 +53,12 @@ class HasPairTripleQuad_DuringPlay(ScoreCondition):
                 description = "Double Pair Royal (%s)" % pair_rank
         return score, description
 
-class HasPairTripleQuad_InHand(ScoreCondition):
-    def check(self, cards):
+class HasPairTripleQuad_InHand(HandScoring):
+    def check(self):
         description = ""
         score = 0
-        if len(cards) > 1:
-            ranks = [card.rank['rank'] for card in cards]
+        if len(self.all_cards) > 1:
+            ranks = [card.rank['rank'] for card in self.all_cards]
             pos_pair = {x:ranks.count(x) for x in ranks}
             for k,v in pos_pair.items():
                 if v == 2:
@@ -73,7 +88,7 @@ class ExactlyEqualsN(ScoreCondition):
         return score, description
 
 
-class HasStraight_InHand(ScoreCondition):
+class HasStraight_InHand(HandScoring):
 
     @staticmethod
     def _enumerate_straights(cards):
@@ -96,11 +111,23 @@ class HasStraight_InHand(ScoreCondition):
                     straights_deduped.append(s)
         return straights_deduped
 
-    @classmethod
-    def check(cls, cards):
+    # @classmethod
+    # def check(cls, cards):
+    #     description = ""
+    #     points = 0
+    #     #cards = self.all_cards
+    #     straights = cls._enumerate_straights(cards)
+    #     for s in straights:
+    #         assert len(s) >= 3, "Straights must be 3 or more cards."
+    #         description += "%d-card straight " % len(s)
+    #         points += len(s)
+    #     return points, description
+        
+    def check(self):
         description = ""
         points = 0
-        straights = cls._enumerate_straights(cards)
+        #cards = self.all_cards
+        straights = self._enumerate_straights(self.all_cards)
         for s in straights:
             assert len(s) >= 3, "Straights must be 3 or more cards."
             description += "%d-card straight " % len(s)
@@ -144,11 +171,43 @@ class CountCombinationsEqualToN(ScoreCondition):
         return score, description
 
 
-class HasFlush(ScoreCondition):
-    def check(self, cards):
-        card_suits = [card.get_suit() for card in cards]
-        suit_count = card_suits.count(cards[-1].get_suit())
-        score = suit_count if suit_count >= 4 else 0
-        assert score < 6, "Flush score exceeded 5"
-        description = "" if score < 4 else ("%d-card flush" % score)
-        return score, description
+class HasFlush(HandScoring):
+    def __init__(self,hand_cards,starter_card,is_crib):
+        self.is_crib = is_crib
+        super().__init__(hand_cards,starter_card)
+    
+    def check(self):
+        if self.is_crib:
+            card_suits = [card.get_suit() for card in self.hand_cards]
+            card_suits.append(self.starter_card.get_suit())
+            d = {x:card_suits.count(x) for x in card_suits}
+            if max(d.values()) == 5:
+                self.score = 5
+                self.description = "5-card flush, 5 score"
+            else:
+                self.score = 0
+        elif not(self.is_crib):
+            card_suits = [card.get_suit() for card in self.hand_cards]
+            d = {x:card_suits.count(x) for x in card_suits}
+            if max(d.values()) == 4:
+                v = list(d.values())
+                k=list(d.keys())
+                flush_suit = k[v.index(max(v))]
+                if flush_suit == self.starter_card.get_suit():
+                    self.score = 5
+                    self.description = "5-card flush, 5 score"
+                else:
+                    self.score = 4
+                    self.description = "4-card flush, 4 score"
+            else:
+                self.score = 0
+        else:
+            raise Exception("Crib or hand not specified")
+        return self.score, self.description    
+        
+        #card_suits = [card.get_suit() for card in cards]
+        #suit_count = card_suits.count(cards[-1].get_suit())
+        #score = suit_count if suit_count >= 4 else 0
+        #assert score < 6, "Flush score exceeded 5"
+        #description = "" if score < 4 else ("%d-card flush" % score)
+        
