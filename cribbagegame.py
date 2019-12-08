@@ -184,13 +184,15 @@ class CribbageRound:
         for p in self.game.players:
             p_cards_played = [move['card'] for move in self.table if move['player'] == p]
             print("Scoring " + str(p) + "'s hand: " + str(p_cards_played + [self.starter]))
-            score = self._score_hand(cards=p_cards_played + [self.starter])  # Include starter card as part of hand
+            #score = self._score_hand(cards=p_cards_played + [self.starter])  # Include starter card as part of hand
+            score = self._score_hand(hand = p_cards_played, s_card = self.starter, is_crib = False)
             if score:
                 self.game.board.peg(p, score)
 
         # Score the crib
         print("Scoring the crib: " + str(self.crib + [self.starter]))
-        score = self._score_hand(cards=(self.crib + [self.starter]))  # Include starter card as part of crib
+        #score = self._score_hand(cards=(self.crib + [self.starter]))  # Include starter card as part of crib
+        score = self._score_hand(hand = self.crib, s_card = self.starter, is_crib = True)
         if score:
             self.game.board.peg(self.dealer, score)
 
@@ -209,17 +211,17 @@ class CribbageRound:
             print("[SCORE] " + desc) if desc else None
         return score
 
-    def _score_hand(self, cards):
+    def _score_hand(self, hand, s_card, is_crib):
         """Score a hand at the end of a round.
 
         :param cards: Cards in a single player's hand.
         :return: Points earned by player.
         """
         score = 0
-        score_scenarios = [scoring.CountCombinationsEqualToN(n=15),
-                           scoring.HasPairTripleQuad_InHand(), scoring.HasStraight_InHand(), scoring.HasFlush()]
+        score_scenarios = [scoring.NinHand(hand, s_card),
+                           scoring.HasPairTripleQuad_InHand(hand, s_card), scoring.HasStraight_InHand(hand, s_card), scoring.HasFlush(hand, s_card, is_crib)]
         for scenario in score_scenarios:
-            s, desc = scenario.check(cards[:])
+            s, desc = scenario.check()
             score += s
             print("[EOR SCORING] " + desc) if desc else None
         return score
