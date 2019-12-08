@@ -110,18 +110,6 @@ class HasStraight_InHand(HandScoring):
                 if not subset:
                     straights_deduped.append(s)
         return straights_deduped
-
-    # @classmethod
-    # def check(cls, cards):
-    #     description = ""
-    #     points = 0
-    #     #cards = self.all_cards
-    #     straights = cls._enumerate_straights(cards)
-    #     for s in straights:
-    #         assert len(s) >= 3, "Straights must be 3 or more cards."
-    #         description += "%d-card straight " % len(s)
-    #         points += len(s)
-    #     return points, description
         
     def check(self):
         description = ""
