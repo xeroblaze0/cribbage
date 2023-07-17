@@ -1,7 +1,8 @@
 """Agents that interact with the CribbageGame."""
 import random
 from abc import ABCMeta, abstractmethod
-
+from cribbage import scoring
+from cribbage.playingcards import Deck, Card
 
 class Player(metaclass=ABCMeta):
     """Abstract Base Class"""
@@ -45,7 +46,69 @@ class RandomPlayer(Player):
     def select_card_to_play(self, hand, table, crib):
         return random.choice(hand)
 
+# def assume_ten_value():
+#     a=Deck()
 
+#     matching_cards = []
+
+#     for rank, card_info in a.RANKS.items():
+#         if card_info['value'] == 10:
+#             matching_cards.append(a.)
+
+
+class MaxPoints(Player):
+
+    def _score_hand(self, hand, s_card, is_crib):
+        """Score a hand at the end of a round.
+
+        :param cards: Cards in a single player's hand.
+        :return: Points earned by player.
+        """
+        score = 0
+        score_scenarios = [scoring.NinHand(hand, s_card),
+                           scoring.HasPairTripleQuad_InHand(hand, s_card), scoring.HasStraight_InHand(hand, s_card), scoring.HasFlush(hand, s_card, is_crib)]
+        for scenario in score_scenarios:
+            s, desc = scenario.check()
+            score += s
+            print("[EOR SCORING] " + desc) if desc else None
+        return score
+
+    def select_crib_cards(self, hand):
+
+        a=Deck()
+        top_points = 0
+        top_hand = []
+        assumption = Card(rank=a.RANKS['ten'], suit=a.SUITS['spades'])
+
+        for i in range(len(hand)):
+            temp_hand = hand
+            first_removal=temp_hand.pop(i)
+            for ii in range(len(temp_hand)):
+                temp_temp_hand = temp_hand
+                second_removal=temp_temp_hand.pop(ii)
+
+        #     #     # if self.dealer=="Player2":
+        #     #     #     score = self.score_hand(hand, assumption, is_crib=True)
+        #     #     # else:
+        #     #     #     score = self.score_hand(hand, assumption, is_crib=False)
+                
+                score = self._score_hand(temp_temp_hand, assumption, is_crib=False)
+                
+                if score > top_points:
+                    top_points = score
+                    top_hand = [first_removal, second_removal]
+
+                temp_temp_hand.insert(ii, second_removal)
+            temp_hand.insert(i, first_removal)
+            
+
+        print(top_points)
+        print(top_hand)        
+        return top_hand
+
+    def select_card_to_play(self, hand, table, crib):
+        return random.choice(hand)
+    
 class HumanPlayer(Player):
     """Interface for a human user to play."""
 
