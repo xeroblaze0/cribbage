@@ -3,6 +3,11 @@ import random
 from abc import ABCMeta, abstractmethod
 from cribbage import scoring
 from cribbage.playingcards import Deck, Card
+import itertools
+from itertools import combinations, permutations
+
+import numpy as np
+import matplotlib.pyplot as plt
 
 class Player(metaclass=ABCMeta):
     """Abstract Base Class"""
@@ -47,9 +52,9 @@ class RandomPlayer(Player):
         return random.choice(hand)
 
 
-class MaxPoints(Player):
+class CPU_Player(Player):
 
-    def _score_hand(self, hand, s_card, is_crib):
+    def score_hand(self, hand, s_card, is_crib):
         """Score a hand at the end of a round.
 
         :param cards: Cards in a single player's hand.
@@ -65,91 +70,8 @@ class MaxPoints(Player):
         
         return score
     
-    # def _get_priori(self,hand):
-    def _get_assumption(self,hand):
-        # imagine a deck
-        deck=Deck()
-        
-        # find your cards in the deck
-        hand_index=[]
-        for i in range(len(deck.cards)):
-            for ii in range(len(hand)):
-                # print(i, ii)
-                if deck.cards[i].rank == hand[ii].rank and deck.cards[i].suit == hand[ii].suit:
-                    print(i, deck.cards[i], hand[ii])
-                    hand_index.append(i)
-
-        # remove and/or clone your hand from the deck
-        clone=[]
-        for x in range(len(hand_index)):
-            clone.append(deck.cards.pop(hand_index[x]-x))
-
-    # def _get_assumption(self,hand):
-
-        num_ace=0
-        num_two=0
-        num_three=0
-        num_four=0
-        num_five=0
-        num_six=0
-        num_seven=0
-        num_eight=0
-        num_nine=0
-        num_ten=0
-        num_jack=0
-        num_queen=0
-        num_king=0
-
-        num_spades=0
-        num_hearts=0
-        num_clubs=0
-        num_diamonds=0
-
-        print(hand)
-        for i in range(len(deck)):
-            # print(card.rank["name"], card.suit["name"])
-
-            if deck.cards[i].rank["name"] == 'ace':
-                num_ace+=1
-            elif deck.cards[i].rank["name"] == 'two':
-                num_two+=1
-            elif deck.cards[i].rank["name"] == 'three':
-                num_three+=1
-            elif deck.cards[i].rank["name"] == 'four':
-                num_four+=1
-            elif deck.cards[i].rank["name"] == 'five':
-                num_five+=1
-            elif deck.cards[i].rank["name"] == 'six':
-                num_six+=1
-            elif deck.cards[i].rank["name"] == 'seven':
-                num_seven+=1
-            elif deck.cards[i].rank["name"] == 'eight':
-                num_eight+=1
-            elif deck.cards[i].rank["name"] == 'nine':
-                num_nine+=1
-            elif deck.cards[i].rank["name"] == 'ten':
-                num_ten+=1
-            elif deck.cards[i].rank["name"] == 'jack':
-                num_jack+=1
-            elif deck.cards[i].rank["name"] == 'queen':
-                num_queen+=1
-            elif deck.cards[i].rank["name"] == 'king':
-                num_king+=1
-            
-            if deck.cards[i].suit["name"] == 'spades':
-                num_spades+=1
-            elif deck.cards[i].suit["name"] == 'hearts':
-                num_hearts+=1
-            elif deck.cards[i].suit["name"] == 'clubs':
-                num_clubs+=1
-            elif deck.cards[i].suit["name"] == 'diamonds':
-                num_diamonds+=1
-        
-        print(num_ace, num_two, num_three, num_four, num_five, num_six, num_seven, num_eight, num_nine, num_ten, num_jack, num_queen, num_king, num_spades, num_hearts, num_clubs, num_diamonds)
-
-    def _optimistic(self, hand):
-        
-        # imagine a deck
+    def deck_without_hand(self, hand):
+         # imagine a deck
         deck=Deck()
         
         # find your cards in the deck
@@ -167,35 +89,173 @@ class MaxPoints(Player):
             # clone.append(deck.cards.pop(hand_index[x]-x))
             deck.cards.pop(hand_index[x]-x)
 
-        # draw card, score the potential hands
-        # returns hand based on highest possible score
-        top_points = 0
-        top_hand = []
+        return deck
 
+    def graph_stuff(self,hand, crib_permus, probs_tops, score_book, score_aves, score_tops):
+    
+        fig = plt.figure()
+        
+        # syntax for 3-D projection
+        ax = fig.add_subplot(131,projection ='3d')
+        
+        # defining all 3 axis
+        x=[0,0,0,0,0,1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4,5,5,5,5,5]
+        y=[1,2,3,4,5,0,2,3,4,5,0,1,3,4,5,0,1,2,4,5,0,1,2,3,5,0,1,2,3,4]
+        # z = score_tops
+        z=np.zeros(len(score_tops))
+
+
+        # plotting
+        dx=np.ones(len(crib_permus))
+        dy=np.ones(len(crib_permus))
+        dz=np.ones(len(score_tops))*score_tops
+
+        ax.bar3d(x, y, z,dx,dy,dz)
+        ax.set_title('3D plot of Top Scores')
+
+        ax.set_xlabel('1st card')
+        ax.set_xticks([0.5,1.5,2.5,3.5,4.5,5.5])
+        x_tick_labels = []
         for i in range(len(hand)):
-            temp_hand = hand
-            first_removal=temp_hand.pop(i)
-            for ii in range(len(temp_hand)):
-                temp_temp_hand = temp_hand
-                second_removal=temp_temp_hand.pop(ii)
+            x_tick_labels.append(hand[i].__str__())
+        ax.set_xticklabels(x_tick_labels)
 
+        ax.set_ylabel('2nd card')
+        ax.set_yticks([0.5,1.5,2.5,3.5,4.5,5.5])
+        y_tick_labels = []
+        for j in range(len(hand)):
+            y_tick_labels.append(hand[j].__str__())
+        ax.set_yticklabels(y_tick_labels)
+
+        ax.set_zlabel('Points')
+
+        ax = fig.add_subplot(132,projection ='3d')
+        z=np.zeros(len(score_aves))
+
+        # plotting
+        dx=np.ones(len(crib_permus))
+        dy=np.ones(len(crib_permus))
+        dz=np.ones(len(score_aves))*score_aves
+
+        ax.bar3d(x, y, z,dx,dy,dz)
+        ax.set_title('3D plot of Average Scores')
+
+        ax.set_xlabel('1st card')
+        ax.set_xticks([0.5,1.5,2.5,3.5,4.5,5.5])
+        x_tick_labels = []
+        for i in range(len(hand)):
+            x_tick_labels.append(hand[i].__str__())
+        ax.set_xticklabels(x_tick_labels)
+
+        ax.set_ylabel('2nd card')
+        ax.set_yticks([0.5,1.5,2.5,3.5,4.5,5.5])
+        y_tick_labels = []
+        for j in range(len(hand)):
+            y_tick_labels.append(hand[j].__str__())
+        ax.set_yticklabels(y_tick_labels)
+
+        ax.set_zlabel('Points')
+
+        ax = fig.add_subplot(133,projection ='3d')
+        z=np.zeros(len(probs_tops))
+
+        # plotting
+        dx=np.ones(len(crib_permus))
+        dy=np.ones(len(crib_permus))
+        dz=np.ones(len(probs_tops))*probs_tops
+
+        ax.bar3d(x, y, z,dx,dy,dz)
+        ax.set_title('3D plot of Most Likely Scores')
+
+        ax.set_xlabel('1st card')
+        ax.set_xticks([0.5,1.5,2.5,3.5,4.5,5.5])
+        x_tick_labels = []
+        for i in range(len(hand)):
+            x_tick_labels.append(hand[i].__str__())
+        ax.set_xticklabels(x_tick_labels)
+
+        ax.set_ylabel('2nd card')
+        ax.set_yticks([0.5,1.5,2.5,3.5,4.5,5.5])
+        y_tick_labels = []
+        for j in range(len(hand)):
+            y_tick_labels.append(hand[j].__str__())
+        ax.set_yticklabels(y_tick_labels)
+
+        ax.set_zlabel('Points')
+        plt.show()
+    
+    def _optimistic(self, hand):
+        
+        # deck = self.deck_without_hand(hand)
+        crib_permus = list(permutations(hand,2))
+
+        probs_book = []
+        score_book = []
+        score_aves = []
+        score_tops = []
+        probs_tops = []
+
+        top_hand = []
+        top_score = 0
+        
+        for i in range(len(crib_permus)):
+
+            deck = self.deck_without_hand(hand)
+            
+            hand.remove(crib_permus[i][0])
+            hand.remove(crib_permus[i][1])
+
+            score_list = []
+            count_list = []
+            temp_top_score = 0
+            
+            while deck.cards:
                 draw = deck.draw()
-                score = self._score_hand(temp_temp_hand, draw, is_crib=False)
-                
-                if score > top_points:
-                    top_points = score
-                    # top_card = draw
-                    top_hand = [first_removal, second_removal]
+                score = self.score_hand(hand, draw, is_crib=False)
+                score_list.append(score)
+                # print("crib: " + str(crib_permus[i]) + "draw: " + str(draw), "score: " + str(score))
 
-                temp_temp_hand.insert(ii, second_removal)
-            temp_hand.insert(i, first_removal)
+                if score > temp_top_score:
+                    temp_top_score = score
 
-        # print(top_points, top_hand, top_card)
-        return top_hand
+                if score > top_score:
+                    top_score = score
+                    # top_hand = crib_permus[i]
+
+            temp_top_count_score = 0
+            temp_top_count = 0
+
+            for j in range(len(score_list)):
+                score = score_list[j]
+                score_count = score_list.count(score)
+                # print(str(crib_permus[i]) + ": score:" + str(score_list[j]) + "count:" + str(score_count))
+
+                # find score most often scored, bias for higher score if tie
+                if score_count >= temp_top_count and score >= temp_top_count_score:
+                    temp_top_count = score_count
+                    temp_top_count_score = score
+
+                # attach times-score-was-scored to list
+                count_list.append(score_count)
+
+            probs_book.append(count_list)
+            score_book.append(score_list)
+            probs_tops.append(temp_top_count_score)
+            score_tops.append(temp_top_score)
+            score_aves.append(np.mean(score_list))
+
+            # goes at end, do calcs first
+            hand.append(crib_permus[i][0])
+            hand.append(crib_permus[i][1])
+            # deck.trash_card(draw)
+
+        self.graph_stuff(hand, crib_permus, probs_tops, score_book, score_aves, score_tops)
 
     def select_crib_cards(self, hand):
 
-        play_hand = self._optimistic(hand)
+        # self._get_priori(hand)
+        self._optimistic(hand)
+        # play_hand = self._get_priori(hand)
             
         # print(play_hand)        
         return play_hand

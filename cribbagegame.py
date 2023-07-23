@@ -1,7 +1,7 @@
 """Cribbage game."""
 import random
 from cribbage import scoring
-from cribbage.player import HumanPlayer, RandomPlayer, MaxPoints
+from cribbage.player import HumanPlayer, RandomPlayer, CPU_Player
 from cribbage.playingcards import Deck
 
 DEBUG = True  # Debug flag for debugging output
@@ -277,7 +277,7 @@ class IllegalCardChoiceError(Exception):
 
 
 def main():
-    players = [HumanPlayer("Player1"), MaxPoints("Player2")]
+    players = [HumanPlayer("Player1"), CPU_Player("Player2")]
     game = CribbageGame(players=players)
     game.start()
 

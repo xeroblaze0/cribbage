@@ -47,6 +47,9 @@ class Deck:
 
     def draw(self):
         return self.cards.pop()
+    
+    def trash_card(self,card):
+        return self.cards.append(card)
 
     def cut(self, cut_point):
         len_precut = len(self.cards)
