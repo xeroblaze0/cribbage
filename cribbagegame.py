@@ -89,7 +89,7 @@ class CribbageRound:
         :return: None
         """
         for p in self.game.players:
-            cards_to_crib = p.select_crib_cards(self.hands[p])
+            cards_to_crib = p.select_crib_cards(self.hands[p], dealer=self.dealer)
             debug("Cards cribbed: %s" % cards_to_crib)
             if not set(cards_to_crib).issubset(set(self.hands[p])):
                 raise IllegalCardChoiceError("Crib cards selected are not part of player's hand.")

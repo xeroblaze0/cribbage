@@ -87,7 +87,6 @@ class ExactlyEqualsN(ScoreCondition):
         description = "%d count" % self.n if score else ""
         return score, description
 
-
 class HasStraight_InHand(HandScoring):
 
     @staticmethod
@@ -121,7 +120,6 @@ class HasStraight_InHand(HandScoring):
             description += "%d-card straight " % len(s)
             points += len(s)
         return points, description
-
 
 class HasStraight_DuringPlay(ScoreCondition):
 
@@ -157,7 +155,6 @@ class CountCombinationsEqualToN(ScoreCondition):
         description = "%d unique %d-counts" % (n_counts, self.n) if n_counts else ""
         score = n_counts * 2
         return score, description
-
 
 class HasFlush(HandScoring):
     def __init__(self,hand_cards,starter_card,is_crib):
