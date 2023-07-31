@@ -45,7 +45,7 @@ class Player(metaclass=ABCMeta):
 class RandomPlayer(Player):
     """A player that makes random decisions."""
 
-    def select_crib_cards(self, hand):
+    def select_crib_cards(self, hand, dealer):
         return random.sample(hand, 2)
 
     def select_card_to_play(self, hand, table, crib):
@@ -336,6 +336,7 @@ class CPU_Player(Player):
         top_hand = []
         top_score = 0
         
+        # interate through each permutation (30)
         for i in range(len(crib_permus)):
 
             deck = self.deck_without_hand(hand)
@@ -350,11 +351,11 @@ class CPU_Player(Player):
             count_list = []
             temp_top_score = 0
 
-            
+            # interate through each card (46)
             while deck.cards:
                 draw = deck.draw()
                 
-                score = self.score_hand(hand, draw, is_crib)
+                score = self.score_hand(hand, draw, is_crib) + crib_score
                 score_list.append(score)
                 # print("hand: " + str(hand) + "draw: " + str(draw), "score: " + str(score))
 
@@ -372,6 +373,7 @@ class CPU_Player(Player):
             temp_top_count_score = 0
             temp_top_count = 0
 
+            # interate through each card (46)
             for j in range(len(score_list)):
                 score = score_list[j]
                 score_count = score_list.count(score)
@@ -396,8 +398,10 @@ class CPU_Player(Player):
             hand.append(crib_permus[i][0])
             hand.append(crib_permus[i][1])
 
-        # print("self: " + str(self.__repr__()))
-        self.tri_graph(hand, crib_permus, probs_tops, score_aves, score_tops)
+        # self.tri_graph(hand, crib_permus, probs_tops, score_aves, score_tops)
+        
+        # return discard with the highest average score
+        return crib_permus[np.argmax(score_aves)]
 
     def select_crib_cards(self, hand, dealer):
 
@@ -407,11 +411,11 @@ class CPU_Player(Player):
         else:
             is_crib = False
         
-        self.discard_analysis(hand, is_crib)
-        # play_hand = self._get_priori(hand)
+        play_hand = self.discard_analysis(hand, is_crib)
+        # print(hand)
+        # print(play_hand)
             
-        # print(play_hand)        
-        return play_hand
+        return list(play_hand)
 
     def select_card_to_play(self, hand, table, crib):
         return random.choice(hand)

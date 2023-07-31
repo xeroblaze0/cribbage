@@ -277,7 +277,7 @@ class IllegalCardChoiceError(Exception):
 
 
 def main():
-    players = [HumanPlayer("Player1"), CPU_Player("Player2")]
+    players = [RandomPlayer("Player1"), CPU_Player("Player2")]
     game = CribbageGame(players=players)
     game.start()
 
